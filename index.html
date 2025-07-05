@@ -10,6 +10,7 @@
       height: 100%;
       background: #000;
       overflow: hidden;
+      cursor: pointer;
     }
 
     #fader {
@@ -34,20 +35,21 @@
 
 <img id="fader" alt="Slideshow">
 
-<!-- Background Audio -->
-<audio id="bg-audio" src="oxy.mp3" loop autoplay muted></audio>
+<audio id="bg-audio" src="bg.mp3"></audio>
 
 <script>
   const fader = document.getElementById('fader');
   const audio = document.getElementById('bg-audio');
   let imageList = [];
   let current = 0;
+  let pausedOnBoo11 = false;
 
-  // Preload known images
-  for (let i = 1; i <= 10; i++) {
+  // Preload images boo1.png to boo11.png
+  for (let i = 1; i <= 11; i++) {
+    const filename = `boo${i}.png`;
     const img = new Image();
-    img.src = `boo${i}.png`;
-    imageList.push(`boo${i}.png`);
+    img.src = filename;
+    imageList.push(filename);
   }
 
   function showImage(index) {
@@ -55,31 +57,38 @@
     setTimeout(() => {
       fader.src = imageList[index];
       fader.classList.remove('hidden');
+
+      // If we're on boo11.png, play audio and pause auto-slideshow
+      if (imageList[index] === 'boo11.png') {
+        audio.play();
+        pausedOnBoo11 = true;
+      }
     }, 1000);
+  }
+
+  function advanceSlide() {
+    if (pausedOnBoo11) return;
+    current = (current + 1) % imageList.length;
+    showImage(current);
   }
 
   function startSlideshow() {
     fader.style.display = 'block';
-    fader.src = imageList[current];
+    showImage(current);
 
-    // Unmute audio after user interaction
-    document.body.addEventListener('click', () => {
-      audio.muted = false;
-      audio.play();
-    }, { once: true });
-
-    setInterval(() => {
-      current = (current + 1) % imageList.length;
-      showImage(current);
-    }, 5000);
+    setInterval(advanceSlide, 5000);
   }
 
+  // Resume from boo11 on click
   fader.addEventListener('click', () => {
-    current = (current + 1) % imageList.length;
-    showImage(current);
+    if (pausedOnBoo11) {
+      pausedOnBoo11 = false;
+      advanceSlide();
+    } else {
+      advanceSlide();
+    }
   });
 
-  // Start it once DOM is ready
   window.onload = startSlideshow;
 </script>
 
