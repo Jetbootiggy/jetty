@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Image Fader</title>
+  <title>Looping Image Fader</title>
   <style>
     body {
       margin: 0;
@@ -28,34 +28,42 @@
 </head>
 <body>
 
-<img id="fader" src="boo1.png" alt="fader image">
+<img id="fader" src="boo1.png" alt="Slideshow">
 
 <script>
-  let current = 1;
   const fader = document.getElementById('fader');
+  let images = [];
+  let current = 0;
 
-  function fadeToNextImage() {
-    fader.classList.add('hidden');
-
-    setTimeout(() => {
-      current++;
-      const nextSrc = `boo${current}.png`;
-
-      // Try loading the next image
-      const tempImg = new Image();
-      tempImg.onload = () => {
-        fader.src = nextSrc;
-        fader.classList.remove('hidden');
-      };
-      tempImg.onerror = () => {
-        // Stop the loop if image doesn't exist
-        clearInterval(fadeLoop);
-      };
-      tempImg.src = nextSrc;
-    }, 1000); // Wait for fade-out to complete
+  // Dynamically find how many boo#.png images exist
+  function loadAllImages(index = 1) {
+    const img = new Image();
+    img.onload = () => {
+      images.push(`boo${index}.png`);
+      loadAllImages(index + 1);
+    };
+    img.onerror = () => {
+      startSlideshow();
+    };
+    img.src = `boo${index}.png`;
   }
 
-  const fadeLoop = setInterval(fadeToNextImage, 5000);
+  function startSlideshow() {
+    if (images.length === 0) return;
+
+    setInterval(() => {
+      fader.classList.add('hidden');
+
+      setTimeout(() => {
+        current = (current + 1) % images.length;
+        fader.src = images[current];
+        fader.classList.remove('hidden');
+      }, 1000); // wait for fade-out
+    }, 5000); // change every 5 seconds
+  }
+
+  // Start loading from boo1.png
+  loadAllImages();
 </script>
 
 </body>
